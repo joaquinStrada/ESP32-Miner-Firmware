@@ -4,11 +4,11 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "mbedtls/md.h"
+#include <Miner.h>
+
+Miner miner;
 
 // Variables
-String poolUrl = "";
-int poolPort = 0;
-String walletAddress = "";
 String mqttUser = "";
 String mqttPass = "";
 String mqttTopic = "";
@@ -28,6 +28,14 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    miner.run();
+  }
+  else
+  {
+    WiFi.reconnect();
+  }
   
 }
 
@@ -102,9 +110,9 @@ void setup_miner() {
   
   JsonObject data = doc["data"];
 
-  poolUrl = String((const char *)data["poolUrl"]);
-  poolPort = data["poolPort"];
-  walletAddress = String((const char *)data["walletAddress"]);
+  String poolUrl = String((const char *)data["poolUrl"]);
+  int poolPort = data["poolPort"];
+  String walletAddress = String((const char *)data["walletAddress"]);
   mqttUser = String((const char *)data["mqttUser"]);
   mqttPass = String((const char *)data["mqttPassword"]);;
   mqttTopic = String((const char*)data["mqttTopic"]);
@@ -122,4 +130,7 @@ void setup_miner() {
   Serial.println(mqttPass);
   Serial.print("Topico de mqtt: ");
   Serial.println(mqttTopic);
+
+  // Inicializamos los objetos
+  miner.setup(poolUrl, poolPort, walletAddress);
 }
