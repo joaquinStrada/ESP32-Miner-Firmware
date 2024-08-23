@@ -5,7 +5,7 @@
 
 class Miner {
     public:
-        void setup(String poolUrl, int poolPort, String walletAddress);
+        void setup(String name, String poolUrl, int poolPort, String walletAddress);
         void run(void);
     private:
         String _name;

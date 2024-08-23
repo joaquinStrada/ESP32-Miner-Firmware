@@ -5,9 +5,10 @@
 #include <mbedtls/md.h>
 #include <config.h>
 
-void Miner::setup(String poolUrl, int poolPort, String walletAddress) {
+void Miner::setup(String name, String poolUrl, int poolPort, String walletAddress) {
   _poolPort = poolPort;
   _walletAddress = walletAddress;
+  _name = name;
 
   int err = WiFi.hostByName((const char *)poolUrl.c_str(), _poolIp);
 

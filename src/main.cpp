@@ -97,7 +97,7 @@ void setup_miner() {
   // Parseando los datos
   StaticJsonDocument<512> doc;
   DeserializationError error = deserializeJson(doc, response);
-
+  
   if (error)
   {
     Serial.print("Error parseando los datos: ");
@@ -110,6 +110,7 @@ void setup_miner() {
   
   JsonObject data = doc["data"];
 
+  String nameMiner = String((const char *)data["name"]);
   String poolUrl = String((const char *)data["poolUrl"]);
   int poolPort = data["poolPort"];
   String walletAddress = String((const char *)data["walletAddress"]);
@@ -118,6 +119,8 @@ void setup_miner() {
   mqttTopic = String((const char*)data["mqttTopic"]);
 
   // Mostramos los datos por pantalla
+  Serial.print("Nombre del minero: ");
+  Serial.println(nameMiner);
   Serial.print("Url de la pool: ");
   Serial.println(poolUrl);
   Serial.print("Puerto de la pool: ");
@@ -132,5 +135,5 @@ void setup_miner() {
   Serial.println(mqttTopic);
 
   // Inicializamos los objetos
-  miner.setup(poolUrl, poolPort, walletAddress);
+  miner.setup(nameMiner, poolUrl, poolPort, walletAddress);
 }
