@@ -3,31 +3,44 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
-#include "mbedtls/md.h"
 #include <Miner.h>
+#include <Mqtt.h>
 
 Miner miner;
+Mqtt mqtt;
 
-// Variables
-String mqttUser = "";
-String mqttPass = "";
-String mqttTopic = "";
+//************************
+//** V A R I A B L E S ***
+//************************
+TaskHandle_t TaskSendData;
 
 //************************
 //** F U N C I O N E S ***
 //************************
-void setup_wifi(void);
-void setup_miner(void);
+void setupWifi(void);
+void setupMiner(void);
+void sendData(void *parameter);
+void callback(char * topic, uint8_t * payload, unsigned int length);
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  setup_wifi();
-  setup_miner();
+  setupWifi();
+  setupMiner();
+
+  xTaskCreatePinnedToCore(
+    sendData,
+    "sendData",
+    10000,
+    NULL,
+    1,
+    &TaskSendData,
+    0
+  );
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // put your main code here, to run repeatedly: 
   if (WiFi.status() == WL_CONNECTED)
   {
     miner.run();
@@ -36,10 +49,12 @@ void loop() {
   {
     WiFi.reconnect();
   }
-  
 }
 
-void setup_wifi() {
+//************************
+//** S E T U P W I F I ***
+//************************
+void setupWifi() {
   delay(10);
 
   // Nos conectamos al wifi
@@ -61,7 +76,10 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-void setup_miner() {
+//************************
+//** S E T U P M I N E R ***
+//************************
+void setupMiner() {
   if (WiFi.status() != WL_CONNECTED)
   {
     Serial.println("No estas conectado a la red wifi!!!");
@@ -114,9 +132,9 @@ void setup_miner() {
   String poolUrl = String((const char *)data["poolUrl"]);
   int poolPort = data["poolPort"];
   String walletAddress = String((const char *)data["walletAddress"]);
-  mqttUser = String((const char *)data["mqttUser"]);
-  mqttPass = String((const char *)data["mqttPassword"]);;
-  mqttTopic = String((const char*)data["mqttTopic"]);
+  String mqttUser = String((const char *)data["mqttUser"]); 
+  String mqttPass = String((const char *)data["mqttPassword"]); 
+  String mqttTopic = String((const char *)data["mqttTopic"]);
 
   // Mostramos los datos por pantalla
   Serial.print("Nombre del minero: ");
@@ -136,4 +154,30 @@ void setup_miner() {
 
   // Inicializamos los objetos
   miner.setup(nameMiner, poolUrl, poolPort, walletAddress);
+  mqtt.setup(nameMiner, mqttUser, mqttPass, mqttTopic);
 }
+
+//************************
+//** S E N D D A T A ***
+//************************
+void sendData(void *parameter) {
+  mqtt.init(callback);
+
+  while (true)
+  {
+    if (!mqtt.connected())
+    {
+      mqtt.reconnect();
+    }
+    
+  }
+  
+}
+
+//************************
+//** C A L L B A C K ***
+//************************
+void callback(char * topic, uint8_t * payload, unsigned int length) {
+
+}
+

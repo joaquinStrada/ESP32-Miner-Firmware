@@ -17,8 +17,8 @@ class Miner {
         uint8_t _byteArrayTarget[32];
         byte _interResult[32];
         byte _shaResult[32];
-        long int _validShares;
-        long int _invalidShares;
+        long unsigned int _validShares;
+        long unsigned int _invalidShares;
         uint32_t _timeMining;
 };
 
